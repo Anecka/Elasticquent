@@ -132,6 +132,16 @@ trait ElasticquentTrait
     }
 
     /**
+     * Get Index Mappings
+     * 
+     * @return array
+     */
+    public function getIndexMappings()
+    {
+        return $this->indexMappings;
+    }
+
+    /**
      * Is Elasticsearch Document
      *
      * Is the data in this module sourced
@@ -532,6 +542,12 @@ trait ElasticquentTrait
 
         if (!is_null($replicas)) {
             $index['body']['settings']['number_of_replicas'] = $replicas;
+        }
+
+        $indexMappings = $instance->getIndexMappings();
+
+        if(!is_null($indexMappings)) {
+            $index['body']['mappings'] = $indexMappings;
         }
 
         $mappingProperties = $instance->getMappingProperties();
