@@ -550,6 +550,7 @@ trait ElasticquentTrait
             $index['body']['mappings'] = $indexMappings;
         }
 
+
         $mappingProperties = $instance->getMappingProperties();
         if (!is_null($mappingProperties)) {
             $index['body']['mappings'][$instance->getTypeName()] = [
@@ -577,6 +578,22 @@ trait ElasticquentTrait
         );
 
         return $client->indices()->delete($index);
+    }
+
+    /**
+     * Index Exists.
+     *
+     * Does this index exist?
+     * 
+     * @return bool
+     */
+    public static function indexExists()
+    {
+        $instance = new static;
+
+        $params = $instance->getBasicEsParams();
+
+        return $instance->getElasticSearchClient()->indices()->exists($params);
     }
 
     /**
