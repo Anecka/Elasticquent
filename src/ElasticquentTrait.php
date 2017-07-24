@@ -593,7 +593,7 @@ trait ElasticquentTrait
 
         $params = $instance->getBasicEsParams();
 
-        return $instance->getElasticSearchClient()->indices()->exists($params);
+        return $instance->getElasticSearchClient()->indices()->exists($params['index']);
     }
 
     /**
