@@ -215,22 +215,15 @@ trait ElasticquentTrait
         ];
 
         $collection->each(function ($m) use (&$blob, $instance) {
-            try {
-                $blob['body'][] = [
-                    'index' => [
-                        '_index' => $instance->getIndexName(),
-                        '_type'  => $instance->getTypeName(),
-                        '_id'    => $m->getKey(),
-                    ],
-                ];
+            $blob['body'][] = [
+                'index' => [
+                    '_index' => $instance->getIndexName(),
+                    '_type'  => $instance->getTypeName(),
+                    '_id'    => $m->getKey(),
+                ],
+            ];
 
-                $blob['body'][] = $m->getIndexDocumentData();
-            } catch (\Exception $e) {
-                \Log::info($e);
-                \Log::Info($m);
-
-                return false;
-            }
+            $blob['body'][] = $m->getIndexDocumentData();
         });
 
         $res = $instance->getElasticSearchClient()->bulk($blob);
