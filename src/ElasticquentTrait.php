@@ -133,7 +133,7 @@ trait ElasticquentTrait
 
     /**
      * Get Index Mappings
-     * 
+     *
      * @return array
      */
     public function getIndexMappings()
@@ -201,6 +201,36 @@ trait ElasticquentTrait
         $all = $instance->newQuery()->get(array('*'));
 
         return $all->addToIndex();
+    }
+
+    /**
+     * @param ElasticquentCollection $collection
+     * @return mixed
+     */
+    public static function bulkAddToIndex(ElasticquentCollection $collection)
+    {
+        $instance = new static;
+        $blob = [
+            'body' => [],
+        ];
+
+
+        $collection->each(function (Elasticquent $m) use (&$blob, $instance) {
+            $blob['body'][] = [
+                'index' => [
+                    '_index' => $instance->getIndexName(),
+                    '_type'  => $instance->getTypeName(),
+                    '_id'    => $m->getKey(),
+                ],
+            ];
+
+            $blob['body'][] = $m->getIndexDocumentData();
+        });
+
+        $res = $instance->getElasticSearchClient()->bulk($blob);
+        $blob = [];
+
+        return $res;
     }
 
     /**
@@ -584,7 +614,7 @@ trait ElasticquentTrait
      * Index Exists.
      *
      * Does this index exist?
-     * 
+     *
      * @return bool
      */
     public static function indexExists()
@@ -624,13 +654,13 @@ trait ElasticquentTrait
     public function newFromHitBuilder($hit = array())
     {
         $key_name = $this->getKeyName();
-        
+
         $attributes = $hit['_source'];
 
         if (isset($hit['_id'])) {
             $attributes[$key_name] = is_numeric($hit['_id']) ? intval($hit['_id']) : $hit['_id'];
         }
-        
+
         // Add fields to attributes
         if (isset($hit['fields'])) {
             foreach ($hit['fields'] as $key => $value) {
@@ -723,7 +753,7 @@ trait ElasticquentTrait
         $items = array_map(function ($item) use ($instance, $parentRelation) {
             // Convert all null relations into empty arrays
             $item = $item ?: [];
-            
+
             return static::newFromBuilderRecursive($instance, $item, $parentRelation);
         }, $items);
 
