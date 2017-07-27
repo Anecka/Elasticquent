@@ -215,7 +215,7 @@ trait ElasticquentTrait
         ];
 
 
-        $collection->each(function (Elasticquent $m) use (&$blob, $instance) {
+        $collection->each(function ($m) use (&$blob, $instance) {
             $blob['body'][] = [
                 'index' => [
                     '_index' => $instance->getIndexName(),
