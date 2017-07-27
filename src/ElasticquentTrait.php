@@ -142,6 +142,14 @@ trait ElasticquentTrait
     }
 
     /**
+     * @return array
+     */
+    public function getTypeSettings()
+    {
+        return $this->typeSettings;
+    }
+
+    /**
      * Is Elasticsearch Document
      *
      * Is the data in this module sourced
@@ -581,11 +589,13 @@ trait ElasticquentTrait
 
 
         $mappingProperties = $instance->getMappingProperties();
+        $typeSettings = $instance->getTypeSettings();
+
         if (!is_null($mappingProperties)) {
-            $index['body']['mappings'][$instance->getTypeName()] = [
+            $index['body']['mappings'][$instance->getTypeName()] = array_merge_recursive([
                 '_source' => array('enabled' => true),
                 'properties' => $mappingProperties,
-            ];
+            ], $typeSettings);
         }
 
         return $client->indices()->create($index);
