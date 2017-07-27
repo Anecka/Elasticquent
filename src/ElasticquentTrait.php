@@ -214,7 +214,6 @@ trait ElasticquentTrait
             'body' => [],
         ];
 
-
         $collection->each(function ($m) use (&$blob, $instance) {
             $blob['body'][] = [
                 'index' => [
