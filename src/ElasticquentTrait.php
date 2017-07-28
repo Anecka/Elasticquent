@@ -213,29 +213,47 @@ trait ElasticquentTrait
 
     /**
      * @param ElasticquentCollection $collection
+     * @param bool $skipExisting
      * @return mixed
      */
-    public static function bulkAddToIndex(ElasticquentCollection $collection)
+    public static function bulkAddToIndex(ElasticquentCollection $collection, bool $skipExisting = true)
     {
         $instance = new static;
         $blob = [
             'body' => [],
         ];
+        $res = ['items' => []];
 
-        $collection->each(function ($m) use (&$blob, $instance) {
-            $blob['body'][] = [
-                'index' => [
-                    '_index' => $instance->getIndexName(),
-                    '_type'  => $instance->getTypeName(),
-                    '_id'    => $m->getKey(),
-                ],
-            ];
+        //If skipping existing then filter those out
+        if($skipExisting) {
+            $collection = $collection->filter(function ($m) {
+                return !$m->elastic_id;
+            });
+        }
 
-            $blob['body'][] = $m->getIndexDocumentData();
-        });
+        //Only proceed if any listings are left
+        if($collection->count()) {
+            $collection->each(function ($m) use (&$blob, $instance, $skipExisting) {
+                $data = [
+                    'index' => [
+                        '_index' => $instance->getIndexName(),
+                        '_type'  => $instance->getTypeName(),
+                    ],
+                ];
 
-        $res = $instance->getElasticSearchClient()->bulk($blob);
-        $blob = [];
+                //If we aren't skipping & already has an id
+                if(!$skipExisting && $m->elastic_id)
+                    $data['index']['_id'] = $m->elastic_id;
+
+                //Otherwise have elasticsearch auto generate the id so indexing is faster
+
+                $blob['body'][] = $data;
+                $blob['body'][] = $m->getIndexDocumentData();
+            });
+
+            $res = $instance->getElasticSearchClient()->bulk($blob);
+            $blob = [];
+        }
 
         return $res;
     }
